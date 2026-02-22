@@ -1,7 +1,7 @@
 // Multi-Site Browser Enhancement - Content Script
 
 // Immediate blocking for Instagram, YouTube, and LinkedIn (before anything else loads)
-(function() {
+(function () {
   const hostname = window.location.hostname;
   const isInstagram = hostname.includes('instagram.com') || hostname.includes('instagr.am');
   const isYouTube = hostname.includes('youtube.com') || hostname.includes('youtu.be');
@@ -26,14 +26,10 @@
 // Site detection
 function getCurrentSite() {
   const hostname = window.location.hostname;
-  if (hostname.includes('chatgpt.com')) {
-    return 'chatgpt';
-  } else if (hostname.includes('linkedin.com')) {
+  if (hostname.includes('linkedin.com')) {
     return 'linkedin';
   } else if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
     return 'youtube';
-  } else if (hostname.includes('n8n') || hostname.includes('hstgr.cloud')) {
-    return 'n8n';
   } else if (hostname.includes('mail.google.com')) {
     return 'gmail';
   } else if (hostname.includes('notion.so')) {
@@ -63,27 +59,20 @@ const defaultSettings = {
   linkedin: {
     searchFocus: true
   },
-  chatgpt: {
-    hideAtlas: true,
-    hideCodex: true,
-    hideLibrary: true,
-    hideImages: true
-  },
-  n8n: {
-    hideInsightsWrapper: true
-  },
+
   gmail: {
     hideUpgradeButton: true
   },
   notion: {
-    hideAIButton: true
+    hideAIButton: true,
+    hideHelpButton: true
   },
+
   googleCalendar: {
     hideTermsPrivacy: true,
     hideBookingPages: true,
     hideSupportButton: true,
-    hideSidePanelToggle: true,
-    reduceRoundedCorners: true
+    hideSidePanelToggle: true
   },
   browser: {
     tabNumbering: true,
@@ -107,7 +96,7 @@ function mergeSettingsWithDefaults(settings) {
 async function loadSettingsOnce() {
   return new Promise((resolve) => {
     try {
-    chrome.storage.sync.get(['webfixSettings'], (result) => {
+      chrome.storage.sync.get(['webfixSettings'], (result) => {
         cachedSettings = mergeSettingsWithDefaults(result.webfixSettings || {});
         resolve(cachedSettings);
       });
@@ -148,12 +137,12 @@ function preloadPopupAssets() {
     link.as = 'image';
     link.href = sectionCfg.iconSrc;
     document.head.appendChild(link);
-    
+
     // Also create an Image object to force load
     const img = new Image();
     img.src = sectionCfg.iconSrc;
   });
-  
+
   // Preload close button icon
   const closeIconUrl = chrome.runtime.getURL('icons/cross.svg');
   const closeLink = document.createElement('link');
@@ -191,23 +180,7 @@ const popupConfig = [
       { key: 'searchFocus', label: "Search Focus (Press 's')" }
     ]
   },
-  {
-    platform: 'chatgpt',
-    title: 'ChatGPT',
-    iconSrc: 'https://svgl.app/library/openai_dark.svg',
-    settings: [
-      { key: 'hideAtlas', label: 'Hide Atlas' },
-      { key: 'hideCodex', label: 'Hide Codex' },
-      { key: 'hideLibrary', label: 'Hide Library' },
-      { key: 'hideImages', label: 'Hide Images' }
-    ]
-  },
-  {
-    platform: 'n8n',
-    title: 'N8N',
-    iconSrc: 'https://svgl.app/library/n8n.svg',
-    settings: [{ key: 'hideInsightsWrapper', label: 'Hide Insights Wrapper' }]
-  },
+
   {
     platform: 'gmail',
     title: 'Gmail',
@@ -218,8 +191,12 @@ const popupConfig = [
     platform: 'notion',
     title: 'Notion',
     iconSrc: 'https://svgl.app/library/notion.svg',
-    settings: [{ key: 'hideAIButton', label: 'Hide AI Button' }]
+    settings: [
+      { key: 'hideAIButton', label: 'Hide AI Button' },
+      { key: 'hideHelpButton', label: 'Hide Help Button' }
+    ]
   },
+
   {
     platform: 'googleCalendar',
     title: 'Google Calendar',
@@ -228,8 +205,7 @@ const popupConfig = [
       { key: 'hideTermsPrivacy', label: 'Hide Terms & Privacy Footer' },
       { key: 'hideBookingPages', label: 'Hide Booking Pages' },
       { key: 'hideSupportButton', label: 'Hide Support Button' },
-      { key: 'hideSidePanelToggle', label: 'Hide Side Panel Toggle' },
-      { key: 'reduceRoundedCorners', label: 'Reduce Rounded Corners' }
+      { key: 'hideSidePanelToggle', label: 'Hide Side Panel Toggle' }
     ]
   },
   {
@@ -426,10 +402,10 @@ function createPopup() {
   // Create host element for Shadow DOM
   popupHost = document.createElement('div');
   popupHost.id = 'webfix-popup-host';
-  
+
   // Attach shadow root (closed for better isolation)
   const shadow = popupHost.attachShadow({ mode: 'closed' });
-  
+
   // Add styles
   const styleEl = document.createElement('style');
   styleEl.textContent = popupStyles;
@@ -438,13 +414,13 @@ function createPopup() {
   // Build popup structure
   const card = document.createElement('div');
   card.className = 'popup-card';
-  
+
   const header = document.createElement('div');
   header.className = 'popup-header';
   const title = document.createElement('h1');
   title.textContent = 'Webfix';
   header.appendChild(title);
-  
+
   const closeBtn = document.createElement('button');
   closeBtn.className = 'popup-close-btn';
   closeBtn.setAttribute('aria-label', 'Close');
@@ -456,40 +432,40 @@ function createPopup() {
     closePopup();
   });
   header.appendChild(closeBtn);
-  
+
   card.appendChild(header);
-  
+
   const body = document.createElement('div');
   body.className = 'popup-body';
 
   // Get current settings and build sections
   chrome.storage.sync.get(['webfixSettings'], (result) => {
     const settings = mergeSettingsWithDefaults(result.webfixSettings || {});
-    
+
     popupConfig.forEach(sectionCfg => {
       const section = document.createElement('div');
       section.className = 'section';
-      
-       const sectionTitle = document.createElement('div');
-       sectionTitle.className = 'section-title';
-       const icon = document.createElement('img');
-       icon.src = sectionCfg.iconSrc;
-       icon.alt = '';
-       sectionTitle.appendChild(icon);
+
+      const sectionTitle = document.createElement('div');
+      sectionTitle.className = 'section-title';
+      const icon = document.createElement('img');
+      icon.src = sectionCfg.iconSrc;
+      icon.alt = '';
+      sectionTitle.appendChild(icon);
       const titleSpan = document.createElement('span');
       titleSpan.textContent = sectionCfg.title;
       sectionTitle.appendChild(titleSpan);
       section.appendChild(sectionTitle);
-      
+
       sectionCfg.settings.forEach(s => {
         const row = document.createElement('div');
         row.className = 'row';
-        
+
         const label = document.createElement('div');
         label.className = 'row-label';
         label.textContent = s.label;
         row.appendChild(label);
-        
+
         const switchLabel = document.createElement('label');
         switchLabel.className = 'switch';
         const input = document.createElement('input');
@@ -499,23 +475,23 @@ function createPopup() {
         slider.className = 'slider';
         switchLabel.appendChild(input);
         switchLabel.appendChild(slider);
-        
+
         input.addEventListener('change', () => {
           setSetting(sectionCfg.platform, s.key, input.checked);
         });
-        
+
         row.appendChild(switchLabel);
         section.appendChild(row);
       });
-      
+
       body.appendChild(section);
     });
   });
 
   card.appendChild(body);
-  
+
   shadow.appendChild(card);
-  
+
   // Scrollbar auto-hide: show on scroll, hide when stopped
   let scrollTimeout = null;
   body.addEventListener('scroll', () => {
@@ -525,7 +501,7 @@ function createPopup() {
       body.classList.remove('scrolling');
     }, 1000);
   }, { passive: true });
-  
+
   // Prevent scroll chaining
   body.addEventListener('wheel', (e) => {
     const atTop = body.scrollTop <= 0;
@@ -535,7 +511,7 @@ function createPopup() {
     }
     e.stopPropagation();
   }, { passive: false });
-  
+
   // Close on click outside
   const clickOutsideHandler = (e) => {
     if (!popupHost.contains(e.target)) {
@@ -547,7 +523,7 @@ function createPopup() {
     document.addEventListener('click', clickOutsideHandler, true);
   }, 10);
   popupHost._clickOutsideHandler = clickOutsideHandler;
-  
+
   // Close on Escape
   const escHandler = (e) => {
     if (e.key === 'Escape') {
@@ -558,7 +534,7 @@ function createPopup() {
   };
   document.addEventListener('keydown', escHandler, true);
   popupHost._escHandler = escHandler;
-  
+
   // Append to documentElement (not body, to avoid SPA issues)
   document.documentElement.appendChild(popupHost);
 }
@@ -609,7 +585,7 @@ async function updateTabTitleWithNumber() {
       const currentTitle = document.title;
       // Check if title already has a number prefix (format: "n. Title")
       const numberPrefixMatch = currentTitle.match(/^\d+\.\s(.+)$/);
-      
+
       let titleToUse;
       if (numberPrefixMatch) {
         // Title already has a number, extract the actual title
@@ -626,7 +602,7 @@ async function updateTabTitleWithNumber() {
           titleToUse = currentTitle;
         }
       }
-      
+
       // Update title with tab number (always show number, even for single tab)
       const newTitle = `${response.tabIndex}. ${titleToUse}`;
       if (document.title !== newTitle) {
@@ -646,7 +622,7 @@ function watchTitleChanges() {
     const currentTitle = document.title;
     // Check if title changed and doesn't match our pattern
     const numberPrefixMatch = currentTitle.match(/^\d+\.\s(.+)$/);
-    
+
     if (numberPrefixMatch) {
       // Title has our number prefix, update stored original title
       originalTitleWithoutNumber = numberPrefixMatch[1];
@@ -661,7 +637,7 @@ function watchTitleChanges() {
       setTimeout(updateTabTitleWithNumber, 50);
     }
   });
-  
+
   // Observe the document head for title changes
   const titleElement = document.querySelector('title');
   if (titleElement) {
@@ -671,7 +647,7 @@ function watchTitleChanges() {
       subtree: true
     });
   }
-  
+
   // Also periodically check for title changes (some sites update title via JS)
   let lastCheckedTitle = document.title;
   setInterval(async () => {
@@ -680,11 +656,11 @@ function watchTitleChanges() {
 
     const currentTitle = document.title;
     const numberPrefixMatch = currentTitle.match(/^\d+\.\s(.+)$/);
-    
+
     // If title changed
     if (currentTitle !== lastCheckedTitle) {
       lastCheckedTitle = currentTitle;
-      
+
       if (numberPrefixMatch) {
         // Title has our prefix, update stored original
         originalTitleWithoutNumber = numberPrefixMatch[1];
@@ -707,17 +683,17 @@ function isUserTyping() {
   return (
     activeElement &&
     (activeElement.tagName === 'INPUT' ||
-     activeElement.tagName === 'TEXTAREA' ||
-     activeElement.isContentEditable ||
-     activeElement.getAttribute('contenteditable') === 'true' ||
-     activeElement.closest('input') ||
-     activeElement.closest('textarea') ||
-     activeElement.closest('[contenteditable="true"]') ||
-     activeElement.closest('[data-testid*="search"]') ||
-     activeElement.closest('[role="searchbox"]') ||
-     activeElement.closest('form[role="search"]') ||
-     activeElement.getAttribute('type') === 'search' ||
-     activeElement.getAttribute('placeholder')?.toLowerCase().includes('search'))
+      activeElement.tagName === 'TEXTAREA' ||
+      activeElement.isContentEditable ||
+      activeElement.getAttribute('contenteditable') === 'true' ||
+      activeElement.closest('input') ||
+      activeElement.closest('textarea') ||
+      activeElement.closest('[contenteditable="true"]') ||
+      activeElement.closest('[data-testid*="search"]') ||
+      activeElement.closest('[role="searchbox"]') ||
+      activeElement.closest('form[role="search"]') ||
+      activeElement.getAttribute('type') === 'search' ||
+      activeElement.getAttribute('placeholder')?.toLowerCase().includes('search'))
   );
 }
 
@@ -729,7 +705,7 @@ async function hideYouTubeMoreSection() {
   if (!enabled) return;
   // Find all ytd-guide-section-renderer elements
   const guideSections = document.querySelectorAll('ytd-guide-section-renderer');
-  
+
   guideSections.forEach(section => {
     // Check for the "More from YouTube" title
     const titleElement = section.querySelector('yt-formatted-string#guide-section-title');
@@ -745,7 +721,7 @@ async function hideYouTubeExploreSection() {
   if (!enabled) return;
   // Find all ytd-guide-section-renderer elements
   const guideSections = document.querySelectorAll('ytd-guide-section-renderer');
-  
+
   guideSections.forEach(section => {
     // Check for the "Explore" title
     const titleElement = section.querySelector('yt-formatted-string#guide-section-title');
@@ -761,12 +737,12 @@ async function hideYouTubeSettingsSection() {
   if (!enabled) return;
   // Find all ytd-guide-section-renderer elements
   const guideSections = document.querySelectorAll('ytd-guide-section-renderer');
-  
+
   guideSections.forEach(section => {
     // Check if this section contains Settings, Report history, Help, or Send feedback
     const items = section.querySelectorAll('ytd-guide-entry-renderer');
     let hasSettingsItems = false;
-    
+
     items.forEach(item => {
       const titleElement = item.querySelector('yt-formatted-string.title');
       if (titleElement) {
@@ -775,7 +751,7 @@ async function hideYouTubeSettingsSection() {
           hasSettingsItems = true;
         }
       }
-      
+
       // Also check by link title attribute
       const link = item.querySelector('a#endpoint');
       if (link) {
@@ -785,7 +761,7 @@ async function hideYouTubeSettingsSection() {
         }
       }
     });
-    
+
     if (hasSettingsItems) {
       section.style.display = 'none';
     }
@@ -801,13 +777,13 @@ async function hideYouTubeFooter() {
   if (footer) {
     footer.style.display = 'none';
   }
-  
+
   // Also try alternative selector
   const footerByClass = document.querySelector('#footer.ytd-guide-renderer');
   if (footerByClass) {
     footerByClass.style.display = 'none';
   }
-  
+
   // Fallback: find by id only
   const footerById = document.getElementById('footer');
   if (footerById && footerById.classList.contains('style-scope') && footerById.classList.contains('ytd-guide-renderer')) {
@@ -828,7 +804,7 @@ async function hideYouTubeCreateButton() {
       buttonRenderer.style.display = 'none';
     }
   }
-  
+
   // Also try finding by text content
   const createByText = Array.from(document.querySelectorAll('ytd-button-renderer')).find(renderer => {
     const textContent = renderer.textContent.trim();
@@ -848,7 +824,7 @@ async function hideYouTubeNotificationsButton() {
   if (notificationsButton) {
     notificationsButton.style.display = 'none';
   }
-  
+
   // Also try finding by aria-label
   const notificationsByAria = document.querySelector('button[aria-label="Notifications"]');
   if (notificationsByAria) {
@@ -876,14 +852,14 @@ async function hideYouTubeAllShorts() {
       entry.style.display = 'none';
     }
   });
-    
+
   // Hide shorts shelf sections
   const shortsShelves = document.querySelectorAll('ytd-rich-shelf-renderer, ytd-shelf-renderer');
   shortsShelves.forEach(shelf => {
-      const title = shelf.querySelector('span#title, div#title-text span#title');
+    const title = shelf.querySelector('span#title, div#title-text span#title');
     if (title && title.textContent.trim().toLowerCase() === 'shorts') {
-        shelf.style.display = 'none';
-      }
+      shelf.style.display = 'none';
+    }
   });
 
   // Hide reel shelf renderers (Shorts carousel on homepage/search)
@@ -914,8 +890,8 @@ async function hideYouTubeAllShorts() {
 
     // Check for shorts-specific classes or data
     if (video.classList.contains('ytd-shorts') ||
-        video.getAttribute('data-shorts') ||
-        video.querySelector('[class*="shorts"]')) {
+      video.getAttribute('data-shorts') ||
+      video.querySelector('[class*="shorts"]')) {
       isShorts = true;
     }
 
@@ -990,7 +966,7 @@ async function hideYouTubeAllShorts() {
     if (shortsContent) {
       shelf.style.display = 'none';
     }
-    
+
     // Also check the title/header for "Shorts"
     const titleElement = shelf.querySelector('span.yt-core-attributed-string');
     if (titleElement && titleElement.textContent.trim().toLowerCase() === 'shorts') {
@@ -1015,7 +991,7 @@ async function hideYouTubeAutoDubbedBadge() {
   if (!enabled) return;
   // Find all badge-shape elements
   const badges = document.querySelectorAll('badge-shape.yt-badge-shape');
-  
+
   badges.forEach(badge => {
     // Check for "Auto-dubbed" text in the badge
     const badgeText = badge.querySelector('div.yt-badge-shape__text');
@@ -1023,7 +999,7 @@ async function hideYouTubeAutoDubbedBadge() {
       badge.style.display = 'none';
     }
   });
-  
+
   // Also try finding by text content directly
   const allBadges = document.querySelectorAll('badge-shape');
   allBadges.forEach(badge => {
@@ -1074,9 +1050,9 @@ function findYouTubeSearchInput() {
       const ariaLabel = input.getAttribute('aria-label')?.toLowerCase() || '';
       const placeholder = input.getAttribute('placeholder')?.toLowerCase() || '';
       const name = input.getAttribute('name')?.toLowerCase() || '';
-      
+
       if ((ariaLabel.includes('search') || placeholder.includes('search') || name.includes('search')) &&
-          input.offsetParent !== null) {
+        input.offsetParent !== null) {
         const rect = input.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
           searchInput = input;
@@ -1129,12 +1105,12 @@ let youtubeSearchListenerAdded = false;
 function handleYouTubeSearchFocus() {
   if (youtubeSearchListenerAdded) return;
   youtubeSearchListenerAdded = true;
-  
+
   document.addEventListener('keydown', async (e) => {
     // Check setting dynamically
     const enabled = await getSetting('youtube', 'searchFocus');
     if (!enabled) return;
-    
+
     // Handle 's' key to focus search bar
     if (e.key === 's' || e.key === 'S') {
       // Don't trigger if user is typing in an input field or search bar
@@ -1160,12 +1136,12 @@ function handleYouTubeSearchFocus() {
         return false;
       }
     }
-    
+
     // Handle Escape key to blur search bar
     if (e.key === 'Escape') {
       const activeElement = document.activeElement;
       const searchInput = findYouTubeSearchInput();
-      
+
       // If the search input is focused, blur it
       if (searchInput && activeElement === searchInput) {
         e.preventDefault();
@@ -1219,7 +1195,7 @@ function findLinkedInSearchInput() {
       const name = input.getAttribute('name')?.toLowerCase() || '';
 
       if ((ariaLabel.includes('search') || placeholder.includes('search') || name.includes('search')) &&
-          input.offsetParent !== null) {
+        input.offsetParent !== null) {
         const rect = input.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
           searchInput = input;
@@ -1237,12 +1213,12 @@ let linkedinSearchListenerAdded = false;
 function handleLinkedInSearchFocus() {
   if (linkedinSearchListenerAdded) return;
   linkedinSearchListenerAdded = true;
-  
+
   document.addEventListener('keydown', async (e) => {
     // Check setting dynamically
     const enabled = await getSetting('linkedin', 'searchFocus');
     if (!enabled) return;
-    
+
     // Handle 's' key to focus search bar
     if (e.key === 's' || e.key === 'S') {
       // Don't trigger if user is typing in an input field or search bar
@@ -1273,7 +1249,7 @@ function handleLinkedInSearchFocus() {
     if (e.key === 'Escape') {
       const activeElement = document.activeElement;
       const searchInput = findLinkedInSearchInput();
-      
+
       // If the search input is focused, blur it
       if (searchInput && activeElement === searchInput) {
         e.preventDefault();
@@ -1285,47 +1261,7 @@ function handleLinkedInSearchFocus() {
   }, true);
 }
 
-// ==================== N8N FUNCTIONS ====================
 
-// Hide insights wrapper on workflows page
-async function hideN8nInsightsWrapper() {
-  const enabled = await getSetting('n8n', 'hideInsightsWrapper');
-  if (!enabled) return;
-  // Primary method: Find by data-test-id and hide its parent container
-  const insightsTabs = document.querySelector('[data-test-id="insights-summary-tabs"]');
-  if (insightsTabs) {
-    // Find the parent div with class matching _insights_*_123 pattern
-    let parent = insightsTabs.parentElement;
-    while (parent && parent !== document.body) {
-      const classList = Array.from(parent.classList);
-      const hasInsightsClass = classList.some(cls => 
-        cls.startsWith('_insights') && cls.endsWith('_123')
-      );
-      if (hasInsightsClass) {
-        parent.style.display = 'none';
-        break;
-      }
-      parent = parent.parentElement;
-    }
-  }
-  
-  // Fallback: Find all divs with class matching _insights_*_123 pattern
-  const allDivs = document.querySelectorAll('div[class*="_insights"]');
-  allDivs.forEach(div => {
-    const classList = Array.from(div.classList);
-    const hasInsightsClass = classList.some(cls => 
-      (cls.startsWith('_insights') || cls.startsWith('_insightsWrapper')) && 
-      cls.endsWith('_123')
-    );
-    if (hasInsightsClass) {
-      div.style.display = 'none';
-    }
-  });
-}
-
-async function runN8n() {
-  await hideN8nInsightsWrapper();
-}
 
 // ==================== GMAIL FUNCTIONS ====================
 
@@ -1342,7 +1278,7 @@ async function hideGmailUpgradeButton() {
       return;
     }
   });
-  
+
   // Find the Upgrade button by text content
   const upgradeButtons = Array.from(document.querySelectorAll('button, [role="link"]'));
   upgradeButtons.forEach(button => {
@@ -1364,7 +1300,7 @@ async function hideGmailUpgradeButton() {
       }
     }
   });
-  
+
   // Also target by specific selectors from the HTML structure
   const upgradeButtonByJsname = document.querySelector('button[jsname="xJyP9e"]');
   if (upgradeButtonByJsname && upgradeButtonByJsname.textContent.trim() === 'Upgrade') {
@@ -1372,15 +1308,15 @@ async function hideGmailUpgradeButton() {
     if (outerWrapper) {
       outerWrapper.style.display = 'none';
     } else {
-    const wrapper = upgradeButtonByJsname.closest('div.bzc-Uw-LV-Zr');
-    if (wrapper) {
-      wrapper.style.display = 'none';
-    } else {
-      upgradeButtonByJsname.style.display = 'none';
+      const wrapper = upgradeButtonByJsname.closest('div.bzc-Uw-LV-Zr');
+      if (wrapper) {
+        wrapper.style.display = 'none';
+      } else {
+        upgradeButtonByJsname.style.display = 'none';
       }
     }
   }
-  
+
   // Target by span with jsname="V67aGc" containing "Upgrade"
   const upgradeSpan = document.querySelector('span[jsname="V67aGc"]');
   if (upgradeSpan && upgradeSpan.textContent.trim() === 'Upgrade') {
@@ -1388,18 +1324,18 @@ async function hideGmailUpgradeButton() {
     if (outerWrapper) {
       outerWrapper.style.display = 'none';
     } else {
-    const button = upgradeSpan.closest('button');
-    if (button) {
-      const wrapper = button.closest('div.bzc-Uw-LV-Zr');
-      if (wrapper) {
-        wrapper.style.display = 'none';
-      } else {
-        button.style.display = 'none';
+      const button = upgradeSpan.closest('button');
+      if (button) {
+        const wrapper = button.closest('div.bzc-Uw-LV-Zr');
+        if (wrapper) {
+          wrapper.style.display = 'none';
+        } else {
+          button.style.display = 'none';
         }
       }
     }
   }
-  
+
   // Direct selector for the wrapper div
   const upgradeWrapper = document.querySelector('div.bzc-Uw-LV-Zr[data-is-touch-wrapper="true"]');
   if (upgradeWrapper) {
@@ -1411,7 +1347,7 @@ async function hideGmailUpgradeButton() {
         if (outerWrapper) {
           outerWrapper.style.display = 'none';
         } else {
-        upgradeWrapper.style.display = 'none';
+          upgradeWrapper.style.display = 'none';
         }
       }
     }
@@ -1422,147 +1358,49 @@ async function runGmail() {
   await hideGmailUpgradeButton();
 }
 
+
 // ==================== NOTION FUNCTIONS ====================
 
 // Hide Notion AI button
 async function hideNotionAIButton() {
   const enabled = await getSetting('notion', 'hideAIButton');
   if (!enabled) return;
-  // Target the specific AI button by its characteristics
-  const aiButtonSelectors = [
-    '.notion-ai-button[aria-label="ai"]',
-    '[role="button"][aria-label="ai"].notion-ai-button',
-    'div[role="button"][tabindex="0"][aria-label="ai"]',
-    'div.notion-ai-button'
-  ];
 
-  aiButtonSelectors.forEach(selector => {
-    try {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(element => {
-        // Verify it's the AI button by checking for the specific structure
-        const ariaLabel = element.getAttribute('aria-label');
-        const role = element.getAttribute('role');
-        const className = element.className;
-
-        if (ariaLabel === 'ai' && role === 'button' && className.includes('notion-ai-button')) {
-          // Additional verification: check for the image content
-          const img = element.querySelector('img[alt="Notion AI face"]');
-          if (img) {
-            element.remove();
-            return;
-          }
-        }
-      });
-    } catch (e) {
-      // Ignore invalid selectors
-    }
+  // Target by specific class
+  const aiButtons = document.querySelectorAll('.notion-ai-button');
+  aiButtons.forEach(button => {
+    button.style.display = 'none';
   });
+}
 
-  // Fallback: Look for any element with the exact structure from the HTML
-  const allDivs = document.querySelectorAll('div[role="button"][aria-label="ai"]');
-  allDivs.forEach(div => {
-    if (div.classList.contains('notion-ai-button')) {
-      // Check if it contains the AI face image
-      const aiFaceImg = div.querySelector('img[alt="Notion AI face"]');
-      if (aiFaceImg) {
-        div.remove();
-      }
+// Hide Notion Help/Contact button
+async function hideNotionHelpButton() {
+  const enabled = await getSetting('notion', 'hideHelpButton');
+  if (!enabled) return;
+
+  // Find by aria-label or by the question mark icon
+  const helpButton = document.querySelector('[aria-label^="Help, contact"]') ||
+    document.querySelector('.questionMarkCircle')?.closest('[role="button"]');
+
+  if (helpButton) {
+    // Try to hide the parent container as well if it's the sidebar footer
+    const container = helpButton.closest('div[style*="flex: 0 0 auto"]');
+    if (container) {
+      container.style.display = 'none';
+    } else {
+      helpButton.style.display = 'none';
     }
-  });
-
-  // Target the sidebar AI button/link
-  const sidebarAISelectors = [
-    'a[href="/ai"][data-testid="sidebar-ai-button"]',
-    'a[data-testid="sidebar-ai-button"]',
-    'a[href="/ai"]'
-  ];
-
-  sidebarAISelectors.forEach(selector => {
-    try {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(element => {
-        // Verify it's the sidebar AI button by checking for "Notion AI" text and AI icon
-        const textContent = element.textContent?.trim();
-        const href = element.getAttribute('href');
-        const dataTestId = element.getAttribute('data-testid');
-
-        if ((textContent === 'Notion AI' || textContent?.includes('Notion AI')) &&
-            (href === '/ai' || dataTestId === 'sidebar-ai-button')) {
-          // Additional verification: check for the AI face SVG
-          const aiFaceSvg = element.querySelector('svg.aiFace');
-          if (aiFaceSvg) {
-            element.remove();
-            return;
-          }
-        }
-      });
-    } catch (e) {
-      // Ignore invalid selectors
-    }
-  });
-
-  // Additional fallback: Look for any link with "Notion AI" text
-  const allLinks = document.querySelectorAll('a[href*="/ai"], a[href*="ai"]');
-  allLinks.forEach(link => {
-    const textContent = link.textContent?.trim();
-    if (textContent === 'Notion AI' || textContent?.includes('Notion AI')) {
-      // Check if it has the AI face SVG
-      const aiFaceSvg = link.querySelector('svg.aiFace');
-      if (aiFaceSvg) {
-        link.remove();
-      }
-    }
-  });
-
-  // Target the help/contact button
-  const helpButtonSelectors = [
-    'div[aria-label*="Help, contact, more"]',
-    'div[aria-label*="Help"]',
-    '[role="button"][aria-label*="Help"]',
-    'div[role="button"][aria-haspopup="dialog"]'
-  ];
-
-  helpButtonSelectors.forEach(selector => {
-    try {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(element => {
-        const ariaLabel = element.getAttribute('aria-label');
-        const role = element.getAttribute('role');
-        const ariaHaspopup = element.getAttribute('aria-haspopup');
-
-        // Check for the help button characteristics
-        if (ariaLabel && ariaLabel.includes('Help') && role === 'button' && ariaHaspopup === 'dialog') {
-          // Verify it contains the question mark circle SVG
-          const questionMarkSvg = element.querySelector('svg.questionMarkCircle');
-          if (questionMarkSvg) {
-            element.remove();
-            return;
-          }
-        }
-      });
-    } catch (e) {
-      // Ignore invalid selectors
-    }
-  });
-
-  // Fallback: Look for any button with question mark circle SVG
-  const allButtons = document.querySelectorAll('div[role="button"], button');
-  allButtons.forEach(button => {
-    const questionMarkSvg = button.querySelector('svg.questionMarkCircle');
-    if (questionMarkSvg) {
-      // Check if it has help-related aria-label
-      const ariaLabel = button.getAttribute('aria-label');
-      if (ariaLabel && (ariaLabel.includes('Help') || ariaLabel.includes('contact'))) {
-        button.remove();
-      }
-    }
-  });
+  }
 }
 
 async function runNotion() {
-  await hideNotionAIButton();
+  await Promise.all([
+    hideNotionAIButton(),
+    hideNotionHelpButton()
+  ]);
 }
+
+
 
 // ==================== GOOGLE CALENDAR FUNCTIONS ====================
 
@@ -1570,7 +1408,7 @@ async function runNotion() {
 async function hideGoogleCalendarTermsPrivacy() {
   const enabled = await getSetting('googleCalendar', 'hideTermsPrivacy');
   if (!enabled) return;
-  
+
   // Target the footer div with class "erDb5d" containing Terms and Privacy links
   const footerDivs = document.querySelectorAll('div.erDb5d');
   footerDivs.forEach(div => {
@@ -1581,7 +1419,7 @@ async function hideGoogleCalendarTermsPrivacy() {
       div.style.display = 'none';
     }
   });
-  
+
   // Also target by link class as fallback
   const termsPrivacyLinks = document.querySelectorAll('a.PTIB6e[href*="policies"]');
   termsPrivacyLinks.forEach(link => {
@@ -1596,7 +1434,7 @@ async function hideGoogleCalendarTermsPrivacy() {
 async function hideGoogleCalendarBookingPages() {
   const enabled = await getSetting('googleCalendar', 'hideBookingPages');
   if (!enabled) return;
-  
+
   // Target the main container div with class "EKq2Ub"
   const bookingDivs = document.querySelectorAll('div.EKq2Ub');
   bookingDivs.forEach(div => {
@@ -1606,7 +1444,7 @@ async function hideGoogleCalendarBookingPages() {
       div.style.display = 'none';
     }
   });
-  
+
   // Fallback: target by button aria-label
   const createButtons = document.querySelectorAll('button[aria-label="Create appointment schedule"]');
   createButtons.forEach(button => {
@@ -1621,7 +1459,7 @@ async function hideGoogleCalendarBookingPages() {
 async function hideGoogleCalendarSupportButton() {
   const enabled = await getSetting('googleCalendar', 'hideSupportButton');
   if (!enabled) return;
-  
+
   // Target the main container div with class "h8Aqhb"
   const supportDivs = document.querySelectorAll('div.h8Aqhb');
   supportDivs.forEach(div => {
@@ -1631,7 +1469,7 @@ async function hideGoogleCalendarSupportButton() {
       div.style.display = 'none';
     }
   });
-  
+
   // Fallback: target by button aria-label directly
   const supportButtons = document.querySelectorAll('button[aria-label="Support"]');
   supportButtons.forEach(button => {
@@ -1646,7 +1484,7 @@ async function hideGoogleCalendarSupportButton() {
 async function hideGoogleCalendarSidePanelToggle() {
   const enabled = await getSetting('googleCalendar', 'hideSidePanelToggle');
   if (!enabled) return;
-  
+
   // Target the main container div with class "Kk7lMc-QWPxkf-LgbsSe-haAclf"
   const toggleDivs = document.querySelectorAll('div.Kk7lMc-QWPxkf-LgbsSe-haAclf');
   toggleDivs.forEach(div => {
@@ -1656,7 +1494,7 @@ async function hideGoogleCalendarSidePanelToggle() {
       div.style.display = 'none';
     }
   });
-  
+
   // Fallback: target by button aria-label directly
   const toggleButtons = document.querySelectorAll('[aria-label="Show side panel"], [aria-label="Hide side panel"]');
   toggleButtons.forEach(button => {
@@ -1667,227 +1505,15 @@ async function hideGoogleCalendarSidePanelToggle() {
   });
 }
 
-// Reduce Google Calendar rounded corners
-let googleCalendarStyleInjected = false;
-async function reduceGoogleCalendarRoundedCorners() {
-  const enabled = await getSetting('googleCalendar', 'reduceRoundedCorners');
-  
-  // Remove existing style if disabled
-  const existingStyle = document.getElementById('webfix-gcal-corners');
-  if (!enabled) {
-    if (existingStyle) existingStyle.remove();
-    googleCalendarStyleInjected = false;
-    return;
-  }
-  
-  // Only inject once
-  if (googleCalendarStyleInjected) return;
-  
-  const style = document.createElement('style');
-  style.id = 'webfix-gcal-corners';
-  style.textContent = `
-    /* Main calendar grid container */
-    .lYYbjc,
-    #YPCqFe,
-    .mXmivb,
-    .RAaXne,
-    .ogB5bf {
-      border-radius: 4px !important;
-    }
-    
-    /* Calendar cells and grid elements */
-    .FLFkR,
-    .RCXPcd,
-    .qLWd9c,
-    .PTdDEc,
-    .MGaLHf,
-    .ChfiMc,
-    .w6FdBf {
-      border-radius: 2px !important;
-    }
-    
-    /* Event chips */
-    [data-eventid],
-    .FAxxKc,
-    .WYrqKe,
-    .E0Zk5d {
-      border-radius: 4px !important;
-    }
-    
-    /* Buttons and inputs */
-    .uArJ5e,
-    .VfPpkd-LgbsSe,
-    .pYTkkf-Bz112c-LgbsSe {
-      border-radius: 4px !important;
-    }
-    
-    /* Date number circles */
-    .w48V4c {
-      border-radius: 4px !important;
-    }
-  `;
-  document.head.appendChild(style);
-  googleCalendarStyleInjected = true;
-}
+
 
 async function runGoogleCalendar() {
   await Promise.all([
     hideGoogleCalendarTermsPrivacy(),
     hideGoogleCalendarBookingPages(),
     hideGoogleCalendarSupportButton(),
-    hideGoogleCalendarSidePanelToggle(),
-    reduceGoogleCalendarRoundedCorners()
+    hideGoogleCalendarSidePanelToggle()
   ]);
-}
-
-// ==================== CHATGPT FUNCTIONS ====================
-
-// Hide ChatGPT Atlas menu item
-async function hideChatGPTAtlas() {
-  const enabled = await getSetting('chatgpt', 'hideAtlas');
-  if (!enabled) return;
-  const atlasLink = Array.from(document.querySelectorAll('a[href="/atlas"]')).find(
-    link => link.textContent.includes('Atlas')
-  );
-  if (atlasLink) {
-    atlasLink.style.display = 'none';
-  }
-  
-  const atlasByData = document.querySelector('a[href="/atlas"][data-sidebar-item="true"]');
-  if (atlasByData) {
-    atlasByData.style.display = 'none';
-  }
-  
-  const atlasByDiscover = document.querySelector('a[href="/atlas"][data-discover="true"]');
-  if (atlasByDiscover) {
-    atlasByDiscover.style.display = 'none';
-  }
-}
-
-// Hide ChatGPT Codex menu item
-async function hideChatGPTCodex() {
-  const enabled = await getSetting('chatgpt', 'hideCodex');
-  if (!enabled) return;
-  const codexLink = Array.from(document.querySelectorAll('a[href="/codex"]')).find(
-    link => link.textContent.includes('Codex')
-  );
-  if (codexLink) {
-    codexLink.style.display = 'none';
-  }
-  
-  const codexByData = document.querySelector('a[href="/codex"][data-sidebar-item="true"]');
-  if (codexByData) {
-    codexByData.style.display = 'none';
-  }
-  
-  const codexByDiscover = document.querySelector('a[href="/codex"][data-discover="true"]');
-  if (codexByDiscover) {
-    codexByDiscover.style.display = 'none';
-  }
-}
-
-// Hide ChatGPT Library menu item
-async function hideChatGPTLibrary() {
-  const enabled = await getSetting('chatgpt', 'hideLibrary');
-  if (!enabled) return;
-  const libraryLink = Array.from(document.querySelectorAll('a[href*="/library"]')).find(
-    link => link.textContent.includes('Library')
-  );
-  if (libraryLink) {
-    libraryLink.style.display = 'none';
-  }
-  
-  const libraryByData = document.querySelector('a[data-testid="sidebar-item-library"]');
-  if (libraryByData) {
-    libraryByData.style.display = 'none';
-  }
-  
-  const libraryByDiscover = document.querySelector('a[href*="/library"][data-discover="true"]');
-  if (libraryByDiscover) {
-    libraryByDiscover.style.display = 'none';
-  }
-}
-
-// Hide ChatGPT Images menu item
-async function hideChatGPTImages() {
-  const enabled = await getSetting('chatgpt', 'hideImages');
-  if (!enabled) return;
-  const imagesLink = Array.from(document.querySelectorAll('a[href="/images"]')).find(
-    link => link.textContent.includes('Images')
-  );
-  if (imagesLink) {
-    imagesLink.style.display = 'none';
-  }
-  
-  const imagesByData = document.querySelector('a[href="/images"][data-sidebar-item="true"]');
-  if (imagesByData) {
-    imagesByData.style.display = 'none';
-  }
-  
-  const imagesByDiscover = document.querySelector('a[href="/images"][data-discover="true"]');
-  if (imagesByDiscover) {
-    imagesByDiscover.style.display = 'none';
-  }
-  
-  const imagesByTestId = document.querySelector('a[data-testid="sidebar-item-library"][href="/images"]');
-  if (imagesByTestId) {
-    imagesByTestId.style.display = 'none';
-  }
-}
-
-async function runChatGPT() {
-  await Promise.all([
-    hideChatGPTAtlas(),
-    hideChatGPTCodex(),
-    hideChatGPTLibrary(),
-    hideChatGPTImages()
-  ]);
-  
-  // Check for pending YouTube transcript to paste
-  checkAndPastePendingText();
-}
-
-// Check for pending text from YouTube and paste it into ChatGPT
-async function checkAndPastePendingText() {
-  try {
-    const result = await chrome.storage.local.get('pendingChatGPTText');
-    const pendingText = result.pendingChatGPTText;
-    
-    if (pendingText) {
-      // Clear the stored text immediately to prevent re-pasting
-      await chrome.storage.local.remove('pendingChatGPTText');
-      
-      // Wait for ChatGPT's input to be ready
-      const maxWait = 10000; // 10 seconds max
-      const startTime = Date.now();
-      
-      const waitForInput = () => {
-        // Try to find the textarea/input
-        const textarea = document.querySelector('textarea[data-id], #prompt-textarea, textarea[placeholder*="Message"], div[contenteditable="true"][data-placeholder]');
-        
-        if (textarea) {
-          // Found the input, paste the text
-          if (textarea.tagName === 'TEXTAREA') {
-            textarea.value = pendingText;
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-          } else {
-            // contenteditable div
-            textarea.innerText = pendingText;
-            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-          textarea.focus();
-        } else if (Date.now() - startTime < maxWait) {
-          // Keep waiting
-          setTimeout(waitForInput, 500);
-        }
-      };
-      
-      // Start waiting for input
-      setTimeout(waitForInput, 1000);
-    }
-  } catch (e) {
-    console.error('Error checking pending text:', e);
-  }
 }
 
 async function runYouTube() {
@@ -1912,40 +1538,35 @@ async function initialize() {
 
   // Preload all popup assets (icons, images, fonts) so popup opens instantly
   preloadPopupAssets();
-  
+
   const site = getCurrentSite();
-  
+
   // Update tab title with number for all sites
   updateTabTitleWithNumber();
   watchTitleChanges();
-  
+
   // Listen for visibility changes (when tab becomes active/inactive)
   document.addEventListener('visibilitychange', async () => {
     if (!document.hidden) {
       // Tab became visible, update the number
       const enabled = await getSetting('browser', 'tabNumbering');
       if (enabled) {
-      updateTabTitleWithNumber();
+        updateTabTitleWithNumber();
       }
     }
   });
-  
-  // Listen for messages from background script to update tab number
-  // (This listener is also set up globally below)
-  
-  if (site === 'chatgpt') {
-    runChatGPT();
-  } else if (site === 'youtube') {
+
+  if (site === 'youtube') {
     runYouTube();
     handleYouTubeSearchFocus();
   } else if (site === 'linkedin') {
     handleLinkedInSearchFocus();
-  } else if (site === 'n8n') {
-    runN8n();
+
   } else if (site === 'gmail') {
     runGmail();
   } else if (site === 'notion') {
     runNotion();
+
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
   }
@@ -1968,19 +1589,19 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === 'sync' && changes.webfixSettings) {
     const newSettings = changes.webfixSettings.newValue;
     const oldSettings = changes.webfixSettings.oldValue;
-    
+
     // Update cached settings
     cachedSettings = mergeSettingsWithDefaults(newSettings || {});
-    
+
     // Check if tabNumbering changed
     const newTabNumbering = newSettings?.browser?.tabNumbering;
     const oldTabNumbering = oldSettings?.browser?.tabNumbering;
-    
+
     if (newTabNumbering !== oldTabNumbering) {
       // Apply immediately
       updateTabTitleWithNumber();
     }
-    
+
     // Check if Instagram blocking changed
     const newBlockInstagram = newSettings?.browser?.blockInstagram;
     const oldBlockInstagram = oldSettings?.browser?.blockInstagram;
@@ -2031,11 +1652,8 @@ if (document.readyState === 'loading') {
 // Watch for DOM changes using MutationObserver
 const observer = new MutationObserver((mutations) => {
   const site = getCurrentSite();
-  
-  if (site === 'chatgpt') {
-    // Run ChatGPT cleanup on DOM changes
-    runChatGPT();
-  } else if (site === 'youtube') {
+
+  if (site === 'youtube') {
     // Check for newly added YouTube feed nudge and remove it immediately
     let feedNudgeDetected = false;
     mutations.forEach((mutation) => {
@@ -2063,11 +1681,11 @@ const observer = new MutationObserver((mutations) => {
                     // Fallback: remove the nudge itself
                     nudgeElement.remove();
                     feedNudgeDetected = true;
+                  }
+                }
               }
             }
-          }
-      }
-      
+
             // Also check for rich section renderer containing feed nudge
             if (element.matches && element.matches('ytd-rich-section-renderer')) {
               const nudge = element.querySelector('ytd-feed-nudge-renderer');
@@ -2076,27 +1694,26 @@ const observer = new MutationObserver((mutations) => {
                 if (titleElement && titleElement.textContent.trim() === 'Your watch history is off') {
                   element.remove();
                   feedNudgeDetected = true;
+                }
+              }
             }
           }
-        }
-      }
-    });
+        });
       }
     });
 
     // If no feed nudge was detected in this mutation, run regular YouTube cleanup
     if (!feedNudgeDetected) {
-    runYouTube();
+      runYouTube();
     }
-  } else if (site === 'n8n') {
-    // Run n8n cleanup on DOM changes
-    runN8n();
+
   } else if (site === 'gmail') {
     // Run Gmail cleanup on DOM changes
     runGmail();
   } else if (site === 'notion') {
     // Run Notion cleanup on DOM changes
     runNotion();
+
   } else if (site === 'googleCalendar') {
     // Run Google Calendar cleanup on DOM changes
     runGoogleCalendar();
@@ -2123,17 +1740,15 @@ startObserver();
 // Periodic check as backup
 setInterval(() => {
   const site = getCurrentSite();
-  
-  if (site === 'chatgpt') {
-    runChatGPT();
-  } else if (site === 'youtube') {
+
+  if (site === 'youtube') {
     runYouTube();
-  } else if (site === 'n8n') {
-    runN8n();
+
   } else if (site === 'gmail') {
     runGmail();
   } else if (site === 'notion') {
     runNotion();
+
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
   }

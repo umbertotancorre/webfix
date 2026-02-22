@@ -20,11 +20,11 @@ chrome.action.onClicked.addListener(async (tab) => {
         } catch {
           // Still failed - ignore (might be restricted page)
         }
-        }, 200);
+      }, 200);
     } catch {
       // Injection failed (restricted page) - ignore
     }
-    }
+  }
 });
 
 // Handle requests for tab index + forward settings updates
@@ -57,7 +57,7 @@ chrome.tabs.onCreated.addListener((tab) => {
             // Content script might not be loaded yet, retry after a longer delay
             if (t.id === tab.id) {
               setTimeout(() => {
-                chrome.tabs.sendMessage(t.id, { action: 'updateTabNumber' }).catch(() => {});
+                chrome.tabs.sendMessage(t.id, { action: 'updateTabNumber' }).catch(() => { });
               }, 500);
             }
           });
@@ -65,7 +65,7 @@ chrome.tabs.onCreated.addListener((tab) => {
       });
     });
   };
-  
+
   // Initial update after short delay
   setTimeout(updateAllTabs, 100);
   // Also update after longer delay to catch tabs that load slowly
@@ -79,7 +79,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     chrome.tabs.query({ currentWindow: true }, (tabs) => {
       tabs.forEach(t => {
         if (t.id && t.url && !t.url.startsWith('chrome://') && !t.url.startsWith('chrome-extension://')) {
-          chrome.tabs.sendMessage(t.id, { action: 'updateTabNumber' }).catch(() => {});
+          chrome.tabs.sendMessage(t.id, { action: 'updateTabNumber' }).catch(() => { });
         }
       });
     });
@@ -91,7 +91,7 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
   chrome.tabs.query({ currentWindow: true }, (tabs) => {
     tabs.forEach(tab => {
       if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
-        chrome.tabs.sendMessage(tab.id, { action: 'updateTabNumber' }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { action: 'updateTabNumber' }).catch(() => { });
       }
     });
   });
@@ -102,7 +102,7 @@ chrome.tabs.onMoved.addListener((tabId, moveInfo) => {
   chrome.tabs.query({ windowId: moveInfo.windowId }, (tabs) => {
     tabs.forEach(tab => {
       if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
-        chrome.tabs.sendMessage(tab.id, { action: 'updateTabNumber' }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { action: 'updateTabNumber' }).catch(() => { });
       }
     });
   });
@@ -113,86 +113,12 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.query({ windowId: activeInfo.windowId }, (tabs) => {
     tabs.forEach(tab => {
       if (tab.id && tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
-        chrome.tabs.sendMessage(tab.id, { action: 'updateTabNumber' }).catch(() => {});
+        chrome.tabs.sendMessage(tab.id, { action: 'updateTabNumber' }).catch(() => { });
       }
     });
   });
 });
 
-// ==================== CONTEXT MENU FOR YOUTUBE ====================
 
-// Create context menu for YouTube videos
-function createYouTubeContextMenu() {
-  // Remove existing menu first (in case it exists)
-  chrome.contextMenus.remove('copy-youtube-data', () => {
-    // Ignore error if it doesn't exist
-    chrome.runtime.lastError;
-    
-    // Create the menu
-    chrome.contextMenus.create({
-      id: 'copy-youtube-data',
-      title: 'Send to ChatGPT',
-      contexts: ['page'],
-      documentUrlPatterns: [
-        'https://www.youtube.com/watch*',
-        'https://youtu.be/*'
-      ]
-    });
-  });
-}
-
-// Create on install
-chrome.runtime.onInstalled.addListener(createYouTubeContextMenu);
-
-// Also create on service worker startup (in case it was killed and restarted)
-createYouTubeContextMenu();
-
-// Handle context menu clicks
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === 'copy-youtube-data' && tab?.id) {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: extractYouTubeTranscript
-      });
-    } catch (error) {
-      console.error('Error extracting YouTube data:', error);
-    }
-  }
-});
-
-// Extract YouTube transcript and send to ChatGPT
-function extractYouTubeTranscript() {
-  var videoUrl = window.location.href;
-  var segments = document.querySelectorAll('ytd-transcript-segment-renderer');
-  var textParts = [];
-  
-  if (segments && segments.length > 0) {
-    for (var i = 0; i < segments.length; i++) {
-      var txt = segments[i].querySelector('.segment-text');
-      var text = txt ? txt.innerText.trim() : '';
-      if (text) textParts.push(text);
-    }
-  }
-  
-  var transcript = textParts.length > 0 
-    ? textParts.join(' ') 
-    : '[No transcript found - please open the transcript panel first]';
-  
-  var prompt = 'Summarize this YouTube video transcript:';
-  var finalText = prompt + '\n\n' + videoUrl + '\n\n' + transcript;
-  
-  chrome.storage.local.set({ pendingChatGPTText: finalText }, function() {
-    chrome.runtime.sendMessage({ action: 'openChatGPT' });
-  });
-}
-
-// Handle message to open ChatGPT
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'openChatGPT') {
-    chrome.tabs.create({ url: 'https://chatgpt.com/' });
-    return true;
-  }
-});
 
 
