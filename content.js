@@ -72,7 +72,15 @@ const defaultSettings = {
     hideTermsPrivacy: true,
     hideBookingPages: true,
     hideSupportButton: true,
-    hideSidePanelToggle: true
+    hideSidePanelToggle: true,
+    hideCreateButton: true,
+    hideSwitchButtons: true,
+    hideSearchPeople: true,
+    hideMiniMonth: true,
+    hideBirthdays: true,
+    hideTasks: true,
+    hideNavigationButtons: true,
+    hideViewSwitcher: true
   },
   browser: {
     tabNumbering: true,
@@ -205,7 +213,15 @@ const popupConfig = [
       { key: 'hideTermsPrivacy', label: 'Hide Terms & Privacy Footer' },
       { key: 'hideBookingPages', label: 'Hide Booking Pages' },
       { key: 'hideSupportButton', label: 'Hide Support Button' },
-      { key: 'hideSidePanelToggle', label: 'Hide Side Panel Toggle' }
+      { key: 'hideSidePanelToggle', label: 'Hide Side Panel Toggle' },
+      { key: 'hideCreateButton', label: 'Hide Create Button' },
+      { key: 'hideSwitchButtons', label: 'Hide Calendar/Tasks Switcher Icon' },
+      { key: 'hideSearchPeople', label: 'Hide Search for People' },
+      { key: 'hideMiniMonth', label: 'Hide Side Panel Mini-Month' },
+      { key: 'hideBirthdays', label: 'Hide Birthdays Calendar' },
+      { key: 'hideTasks', label: 'Hide Tasks Calendar' },
+      { key: 'hideNavigationButtons', label: 'Hide Today Button' },
+      { key: 'hideViewSwitcher', label: 'Hide View Switcher' }
     ]
   },
   {
@@ -1505,15 +1521,255 @@ async function hideGoogleCalendarSidePanelToggle() {
   });
 }
 
+// Hide Google Calendar "Create" button
+async function hideGoogleCalendarCreateButton() {
+  const enabled = await getSetting('googleCalendar', 'hideCreateButton');
+  if (!enabled) return;
 
+  // Target the button with jsname "todz4c"
+  const createButton = document.querySelector('button[jsname="todz4c"]');
+  if (createButton) {
+    // Hide the outer wrapper div with jsname "WjL7X"
+    const wrapper = createButton.closest('div[jsname="WjL7X"]');
+    if (wrapper) {
+      wrapper.style.display = 'none';
+    } else {
+      createButton.style.display = 'none';
+    }
+  }
+
+  // Fallback: hide based on text "Create" inside a button with known classes
+  const allButtons = document.querySelectorAll('button');
+  allButtons.forEach(button => {
+    if (button.textContent.includes('Create') && (button.classList.contains('APIQad') || button.getAttribute('jsname') === 'todz4c')) {
+      const wrapper = button.closest('div[jsname="WjL7X"]') || button.closest('.dwlvNd');
+      if (wrapper) {
+        wrapper.style.display = 'none';
+      } else {
+        button.style.display = 'none';
+      }
+    }
+  });
+
+  // Fallback: target by jsname on the div directly
+  const wrapperByJsname = document.querySelector('div[jsname="WjL7X"]');
+  if (wrapperByJsname) {
+    wrapperByJsname.style.display = 'none';
+  }
+}
+
+// Hide Google Calendar "Switch to Calendar/Tasks" buttons
+async function hideGoogleCalendarSwitchButtons() {
+  const enabled = await getSetting('googleCalendar', 'hideSwitchButtons');
+  if (!enabled) return;
+
+  // Target the container div with class "wc0xVe"
+  const switcherDivs = document.querySelectorAll('div.wc0xVe');
+  switcherDivs.forEach(div => {
+    // Verify it contains the relevant buttons
+    const hasCalendarSwitch = div.querySelector('button[aria-label="Switch to Calendar"]');
+    const hasTasksSwitch = div.querySelector('button[aria-label="Switch to Tasks"]');
+    if (hasCalendarSwitch || hasTasksSwitch) {
+      div.style.display = 'none';
+    }
+  });
+
+  // Fallback: target buttons directly
+  const buttons = document.querySelectorAll('button[aria-label="Switch to Calendar"], button[aria-label="Switch to Tasks"]');
+  buttons.forEach(button => {
+    const container = button.closest('div.wc0xVe');
+    if (container) {
+      container.style.display = 'none';
+    } else {
+      button.style.display = 'none';
+    }
+  });
+}
+
+// Hide Google Calendar "Search for people" box
+async function hideGoogleCalendarSearchPeople() {
+  const enabled = await getSetting('googleCalendar', 'hideSearchPeople');
+  if (!enabled) return;
+
+  // Hide the outer "Meet with…" / "Search for people" container
+  const outerContainers = document.querySelectorAll('div.qXIcZc');
+  outerContainers.forEach(div => {
+    div.style.display = 'none';
+  });
+
+  // Also target the inner container div with class "TBA7qc"
+  const searchPeopleDivs = document.querySelectorAll('div.TBA7qc');
+  searchPeopleDivs.forEach(div => {
+    div.style.display = 'none';
+  });
+}
+
+// Hide Google Calendar side panel mini-month (LXjtcc container or buttons inside)
+async function hideGoogleCalendarMiniMonth() {
+  const enabled = await getSetting('googleCalendar', 'hideMiniMonth');
+  if (!enabled) return;
+
+  // Target the container div with class "LXjtcc"
+  const miniMonthDivs = document.querySelectorAll('div.LXjtcc');
+  miniMonthDivs.forEach(div => {
+    // Hidden the wrapper if that's what's intended, but specifically target buttons inside
+    const buttons = div.querySelectorAll('button');
+    if (buttons.length > 0) {
+      buttons.forEach(btn => btn.style.display = 'none');
+    }
+    // also hide the whole container as it's typically just a wrapper for the button/calendar
+    div.style.display = 'none';
+  });
+}
+
+// Hide Google Calendar "Birthdays" calendar
+async function hideGoogleCalendarBirthdays() {
+  const enabled = await getSetting('googleCalendar', 'hideBirthdays');
+  if (!enabled) return;
+
+  // Target based on the provided HTML structure
+  const selectors = [
+    'li.DYTqTd[role="listitem"]',
+    'div.XXcuqd[role="presentation"]',
+    'div[data-text="Birthdays"]',
+    'input[aria-label="Birthdays"]',
+    'button[aria-label*="Birthdays"]',
+    'span.dNKuRb' // specific class for some calendar items
+  ];
+
+  selectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      const text = el.textContent.trim();
+      const ariaLabel = el.getAttribute('aria-label') || '';
+      const dataText = el.getAttribute('data-text') || '';
+
+      if (text === 'Birthdays' || ariaLabel.includes('Birthdays') || dataText === 'Birthdays') {
+        const row = el.closest('div.XXcuqd') || el.closest('li.DYTqTd') || el.closest('div[role="listitem"]') || el;
+        if (row) {
+          row.style.display = 'none';
+        }
+      }
+    });
+  });
+}
+
+// Hide Google Calendar "Tasks" calendar
+async function hideGoogleCalendarTasks() {
+  const enabled = await getSetting('googleCalendar', 'hideTasks');
+  if (!enabled) return;
+
+  // Target based on the provided HTML structure
+  const selectors = [
+    'li.DYTqTd[role="listitem"]',
+    'div.XXcuqd[role="presentation"]',
+    'div[data-text="Tasks"]',
+    'input[aria-label="Tasks"]',
+    'button[aria-label*="Tasks"]',
+    'span.dNKuRb'
+  ];
+
+  selectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      const text = el.textContent.trim();
+      const ariaLabel = el.getAttribute('aria-label') || '';
+      const dataText = el.getAttribute('data-text') || '';
+
+      if (text === 'Tasks' || ariaLabel.includes('Tasks') || dataText === 'Tasks') {
+        const row = el.closest('div.XXcuqd') || el.closest('li.DYTqTd') || el.closest('div[role="listitem"]') || el;
+        if (row) {
+          row.style.display = 'none';
+        }
+      }
+    });
+  });
+}
+
+
+
+// Hide Google Calendar Today button (but keep navigation arrows)
+async function hideGoogleCalendarNavigationButtons() {
+  const enabled = await getSetting('googleCalendar', 'hideNavigationButtons');
+  if (!enabled) return;
+
+  // Only target the Today button
+  const selectors = [
+    'button[jsname="P6mm8"]',
+    'button[aria-label*="Today"]'
+  ];
+
+  selectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      const wrapper = el.closest('span[data-is-tooltip-wrapper="true"]');
+      if (wrapper) {
+        wrapper.style.display = 'none';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+  });
+}
+
+// Fix Google Calendar list heights and positions (compact layout)
+async function fixGoogleCalendarListHeights() {
+  // Target both "My calendars" and "Other calendars" lists
+  const lists = document.querySelectorAll('div[role="list"].DB71Ge');
+  lists.forEach(list => {
+    const items = Array.from(list.querySelectorAll('div.XXcuqd'));
+    let visibleCount = 0;
+    const itemHeight = 32; // Standard height for Google Calendar list items
+
+    items.forEach(item => {
+      // Check if the item is explicitly hidden
+      const isItemHidden = item.style.display === 'none';
+
+      if (!isItemHidden) {
+        // Position visible items correctly to close gaps
+        const newY = visibleCount * itemHeight;
+        item.style.transform = `translateY(${newY}px)`;
+        item.style.height = `${itemHeight}px`;
+        visibleCount++;
+      }
+    });
+
+    // Adjust parent container height to fit content
+    const totalHeight = visibleCount * itemHeight;
+    list.style.height = `${totalHeight}px`;
+  });
+}
+
+// Hide Google Calendar view switcher (Day/Week/Month/Year dropdown)
+async function hideGoogleCalendarViewSwitcher() {
+  const enabled = await getSetting('googleCalendar', 'hideViewSwitcher');
+  if (!enabled) return;
+
+  // Target by class XyKLOd (main view switcher container)
+  const viewSwitchers = document.querySelectorAll('div.XyKLOd');
+  viewSwitchers.forEach(el => {
+    el.style.display = 'none';
+  });
+}
 
 async function runGoogleCalendar() {
   await Promise.all([
     hideGoogleCalendarTermsPrivacy(),
     hideGoogleCalendarBookingPages(),
     hideGoogleCalendarSupportButton(),
-    hideGoogleCalendarSidePanelToggle()
+    hideGoogleCalendarSidePanelToggle(),
+    hideGoogleCalendarCreateButton(),
+    hideGoogleCalendarSwitchButtons(),
+    hideGoogleCalendarSearchPeople(),
+    hideGoogleCalendarMiniMonth(),
+    hideGoogleCalendarBirthdays(),
+    hideGoogleCalendarTasks(),
+    hideGoogleCalendarNavigationButtons(),
+    hideGoogleCalendarViewSwitcher()
   ]);
+
+  // Run height fixation after hiding elements to compact the list
+  await fixGoogleCalendarListHeights();
 }
 
 async function runYouTube() {
