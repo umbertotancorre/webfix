@@ -65,7 +65,8 @@ const defaultSettings = {
   },
   notion: {
     hideAIButton: true,
-    hideHelpButton: true
+    hideHelpButton: true,
+    hideAgentsSection: true
   },
 
   googleCalendar: {
@@ -201,7 +202,8 @@ const popupConfig = [
     iconSrc: 'https://svgl.app/library/notion.svg',
     settings: [
       { key: 'hideAIButton', label: 'Hide AI Button' },
-      { key: 'hideHelpButton', label: 'Hide Help Button' }
+      { key: 'hideHelpButton', label: 'Hide Help Button' },
+      { key: 'hideAgentsSection', label: 'Hide Agents Section' }
     ]
   },
 
@@ -1409,10 +1411,27 @@ async function hideNotionHelpButton() {
   }
 }
 
+// Hide Notion Agents section in sidebar
+async function hideNotionAgentsSection() {
+  const enabled = await getSetting('notion', 'hideAgentsSection');
+  if (!enabled) return;
+
+  const agentsHeader = document.querySelector('.notion-outliner-agents-header-container');
+  if (agentsHeader) {
+    const agentsSection = agentsHeader.closest('div[style*="cursor: pointer"]');
+    if (agentsSection) {
+      agentsSection.style.display = 'none';
+    } else {
+      agentsHeader.style.display = 'none';
+    }
+  }
+}
+
 async function runNotion() {
   await Promise.all([
     hideNotionAIButton(),
-    hideNotionHelpButton()
+    hideNotionHelpButton(),
+    hideNotionAgentsSection()
   ]);
 }
 
