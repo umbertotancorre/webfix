@@ -1,21 +1,23 @@
 // Multi-Site Browser Enhancement - Content Script
 
-// Immediate blocking for Instagram, YouTube, and LinkedIn (before anything else loads)
+// Immediate blocking for Instagram, YouTube, LinkedIn, and X (before anything else loads)
 (function () {
   const hostname = window.location.hostname;
   const isInstagram = hostname.includes('instagram.com') || hostname.includes('instagr.am');
   const isYouTube = hostname.includes('youtube.com') || hostname.includes('youtu.be');
   const isLinkedIn = hostname.includes('linkedin.com');
+  const isX = hostname.includes('x.com') || hostname.includes('twitter.com');
 
-  if (isInstagram || isYouTube || isLinkedIn) {
+  if (isInstagram || isYouTube || isLinkedIn || isX) {
     // Check if blocking is enabled in storage
     chrome.storage.sync.get(['webfixSettings'], (result) => {
       const settings = result.webfixSettings || {};
       const blockInstagram = settings.browser?.blockInstagram;
       const blockYouTube = settings.browser?.blockYouTube;
       const blockLinkedIn = settings.browser?.blockLinkedIn;
+      const blockX = settings.browser?.blockX;
 
-      if ((isInstagram && blockInstagram) || (isYouTube && blockYouTube) || (isLinkedIn && blockLinkedIn)) {
+      if ((isInstagram && blockInstagram) || (isYouTube && blockYouTube) || (isLinkedIn && blockLinkedIn) || (isX && blockX)) {
         // Block immediately before any content loads
         window.location.replace('about:blank');
       }
@@ -79,7 +81,8 @@ const defaultSettings = {
     tabNumbering: true,
     blockInstagram: false,
     blockYouTube: false,
-    blockLinkedIn: false
+    blockLinkedIn: false,
+    blockX: false
   }
 };
 
@@ -215,7 +218,8 @@ const popupConfig = [
       { key: 'tabNumbering', label: 'Tab Numbering' },
       { key: 'blockInstagram', label: 'Block Instagram' },
       { key: 'blockYouTube', label: 'Block YouTube' },
-      { key: 'blockLinkedIn', label: 'Block LinkedIn' }
+      { key: 'blockLinkedIn', label: 'Block LinkedIn' },
+      { key: 'blockX', label: 'Block X' }
     ]
   }
 ];
@@ -1830,6 +1834,17 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
       // since the immediate check at script load determines the blocking
       const hostname = window.location.hostname;
       if (hostname.includes('linkedin.com')) {
+        window.location.reload();
+      }
+    }
+
+    // Check if X blocking changed
+    const newBlockX = newSettings?.browser?.blockX;
+    const oldBlockX = oldSettings?.browser?.blockX;
+
+    if (newBlockX !== oldBlockX) {
+      const hostname = window.location.hostname;
+      if (hostname.includes('x.com') || hostname.includes('twitter.com')) {
         window.location.reload();
       }
     }
