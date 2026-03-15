@@ -32,8 +32,6 @@ function getCurrentSite() {
     return 'youtube';
   } else if (hostname.includes('mail.google.com')) {
     return 'gmail';
-  } else if (hostname.includes('notion.so')) {
-    return 'notion';
   } else if (hostname.includes('calendar.google.com')) {
     return 'googleCalendar';
   }
@@ -63,11 +61,6 @@ const defaultSettings = {
   gmail: {
     hideUpgradeButton: true
   },
-  notion: {
-    hideAIButton: true,
-    hideHelpButton: true
-  },
-
   googleCalendar: {
     hideTermsPrivacy: true,
     hideBookingPages: true,
@@ -195,16 +188,6 @@ const popupConfig = [
     iconSrc: 'https://svgl.app/library/gmail.svg',
     settings: [{ key: 'hideUpgradeButton', label: 'Hide Upgrade Button' }]
   },
-  {
-    platform: 'notion',
-    title: 'Notion',
-    iconSrc: 'https://svgl.app/library/notion.svg',
-    settings: [
-      { key: 'hideAIButton', label: 'Hide AI Button' },
-      { key: 'hideHelpButton', label: 'Hide Help Button' }
-    ]
-  },
-
   {
     platform: 'googleCalendar',
     title: 'Google Calendar',
@@ -1375,49 +1358,6 @@ async function runGmail() {
 }
 
 
-// ==================== NOTION FUNCTIONS ====================
-
-// Hide Notion AI button
-async function hideNotionAIButton() {
-  const enabled = await getSetting('notion', 'hideAIButton');
-  if (!enabled) return;
-
-  // Target by specific class
-  const aiButtons = document.querySelectorAll('.notion-ai-button');
-  aiButtons.forEach(button => {
-    button.style.display = 'none';
-  });
-}
-
-// Hide Notion Help/Contact button
-async function hideNotionHelpButton() {
-  const enabled = await getSetting('notion', 'hideHelpButton');
-  if (!enabled) return;
-
-  // Find by aria-label or by the question mark icon
-  const helpButton = document.querySelector('[aria-label^="Help, contact"]') ||
-    document.querySelector('.questionMarkCircle')?.closest('[role="button"]');
-
-  if (helpButton) {
-    // Try to hide the parent container as well if it's the sidebar footer
-    const container = helpButton.closest('div[style*="flex: 0 0 auto"]');
-    if (container) {
-      container.style.display = 'none';
-    } else {
-      helpButton.style.display = 'none';
-    }
-  }
-}
-
-async function runNotion() {
-  await Promise.all([
-    hideNotionAIButton(),
-    hideNotionHelpButton()
-  ]);
-}
-
-
-
 // ==================== GOOGLE CALENDAR FUNCTIONS ====================
 
 // Hide Google Calendar Terms & Privacy footer
@@ -1820,9 +1760,6 @@ async function initialize() {
 
   } else if (site === 'gmail') {
     runGmail();
-  } else if (site === 'notion') {
-    runNotion();
-
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
   }
@@ -1966,10 +1903,6 @@ const observer = new MutationObserver((mutations) => {
   } else if (site === 'gmail') {
     // Run Gmail cleanup on DOM changes
     runGmail();
-  } else if (site === 'notion') {
-    // Run Notion cleanup on DOM changes
-    runNotion();
-
   } else if (site === 'googleCalendar') {
     // Run Google Calendar cleanup on DOM changes
     runGoogleCalendar();
@@ -2002,9 +1935,6 @@ setInterval(() => {
 
   } else if (site === 'gmail') {
     runGmail();
-  } else if (site === 'notion') {
-    runNotion();
-
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
   }
