@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Webfix",
+  "version": "1.0.0",
+  "description": "",
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    },
+    "default_title": "Webfix"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content/blocker.js",
+        "content/settings.js",
+        "content/utils.js",
+        "content/tab-numbering.js",
+        "content/popup.js",
+        "content/youtube.js",
+        "content/linkedin.js",
+        "content/gmail.js",
+        "content/google-calendar.js",
+        "content/x.js",
+        "content/main.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "host_permissions": ["<all_urls>"],
+  "permissions": ["activeTab", "storage", "tabs"],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.svg"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
+
