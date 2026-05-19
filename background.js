@@ -61,7 +61,3 @@ chrome.tabs.onMoved.addListener((tabId, moveInfo) => {
 chrome.tabs.onActivated.addListener(() => {
   updateAllTabNumbers();
 });
-
-
-
-
