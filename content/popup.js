@@ -12,6 +12,18 @@ function preloadPopupAssets() {
 
 const popupConfig = [
   {
+    platform: 'browser',
+    title: 'Browser',
+    iconSrc: chrome.runtime.getURL('icons/browser.svg'),
+    settings: [
+      { key: 'tabNumbering', label: 'Tab Numbering' },
+      { key: 'blockInstagram', label: 'Block Instagram' },
+      { key: 'blockYouTube', label: 'Block YouTube' },
+      { key: 'blockLinkedIn', label: 'Block LinkedIn' },
+      { key: 'blockX', label: 'Block X' }
+    ]
+  },
+  {
     platform: 'youtube',
     title: 'YouTube',
     iconSrc: 'https://svgl.app/library/youtube.svg',
@@ -69,22 +81,27 @@ const popupConfig = [
     iconSrc: 'https://svgl.app/library/x.svg',
     iconStyle: 'filter: invert(1);',
     settings: [
-      { key: 'hideCommunities', label: 'Hide Communities' },
-      { key: 'hideCreatorStudio', label: 'Hide Creator Studio' }
+      { key: 'hideNavLogo', label: 'Nav: Hide X Logo' },
+      { key: 'hideNavHome', label: 'Nav: Hide Home' },
+      { key: 'hideNavExplore', label: 'Nav: Hide Explore' },
+      { key: 'hideNavNotifications', label: 'Nav: Hide Notifications' },
+      { key: 'hideNavFollow', label: 'Nav: Hide Follow' },
+      { key: 'hideNavMessages', label: 'Nav: Hide Chat' },
+      { key: 'hideNavGrok', label: 'Nav: Hide Grok' },
+      { key: 'hideNavPremium', label: 'Nav: Hide Premium' },
+      { key: 'hideNavBookmarks', label: 'Nav: Hide Bookmarks' },
+      { key: 'hideNavCreatorStudio', label: 'Nav: Hide Creator Studio' },
+      { key: 'hideNavArticles', label: 'Nav: Hide Articles' },
+      { key: 'hideNavProfile', label: 'Nav: Hide Profile' },
+      { key: 'hideNavMore', label: 'Nav: Hide More' },
+      { key: 'centerNavSidebar', label: 'Nav: Center Vertically' },
+      { key: 'hideTrendingSidebar', label: 'Hide Trending & Who to Follow' },
+      { key: 'hideGrok', label: 'Hide Grok Button' },
+      { key: 'hideChat', label: 'Hide Chat Button' },
+      { key: 'floatPostButton', label: 'Float Post Button (bottom right)' },
+      { key: 'shiftTimelineRight', label: 'Shift Timeline Right' }
     ]
   },
-  {
-    platform: 'browser',
-    title: 'Browser',
-    iconSrc: chrome.runtime.getURL('icons/browser.svg'),
-    settings: [
-      { key: 'tabNumbering', label: 'Tab Numbering' },
-      { key: 'blockInstagram', label: 'Block Instagram' },
-      { key: 'blockYouTube', label: 'Block YouTube' },
-      { key: 'blockLinkedIn', label: 'Block LinkedIn' },
-      { key: 'blockX', label: 'Block X' }
-    ]
-  }
 ];
 
 const popupStyles = `

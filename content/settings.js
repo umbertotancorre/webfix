@@ -34,8 +34,25 @@ const defaultSettings = {
     hideViewSwitcher: true
   },
   x: {
-    hideCommunities: true,
-    hideCreatorStudio: true
+    hideNavCreatorStudio: false,
+    hideTrendingSidebar: true,
+    hideGrok: true,
+    hideChat: true,
+    hideNavLogo: false,
+    hideNavHome: false,
+    hideNavExplore: false,
+    hideNavNotifications: false,
+    hideNavFollow: false,
+    hideNavMessages: false,
+    hideNavGrok: false,
+    hideNavProfile: false,
+    hideNavPremium: false,
+    hideNavBookmarks: false,
+    hideNavArticles: false,
+    hideNavMore: false,
+    centerNavSidebar: false,
+    floatPostButton: false,
+    shiftTimelineRight: false
   },
   browser: {
     tabNumbering: true,
