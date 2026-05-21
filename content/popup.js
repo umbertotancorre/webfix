@@ -102,6 +102,25 @@ const popupConfig = [
       { key: 'shiftTimelineRight', label: 'Shift Timeline Right' }
     ]
   },
+  {
+    platform: 'discord',
+    title: 'Discord',
+    iconSrc: 'https://svgl.app/library/discord.svg',
+    settings: [
+      { key: 'hideGiftButton',    label: 'Hide Gift Button' },
+      { key: 'hideGifButton',     label: 'Hide GIF Button' },
+      { key: 'hideStickerButton', label: 'Hide Sticker Button' },
+      { key: 'hideEmojiButton',   label: 'Hide Emoji Button' },
+      { key: 'hideAppsButton',       label: 'Hide Apps Button' },
+      { key: 'hideAddServerButton',    label: 'Hide Add a Server Button' },
+      { key: 'hideDiscoverButton',     label: 'Hide Discover Button' },
+      { key: 'hideDownloadAppsButton', label: 'Hide Download Apps Button' },
+      { key: 'hideHelpButton',          label: 'Hide Help Button' },
+      { key: 'hideEventsItem',          label: 'Hide Events' },
+      { key: 'hideServerBoostsItem',    label: 'Hide Server Boosts' },
+      { key: 'redirectToFirstServer',   label: 'Auto-open First Server' }
+    ]
+  },
 ];
 
 const popupStyles = `

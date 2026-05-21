@@ -28,6 +28,8 @@ async function initialize() {
     runGmail();
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
+  } else if (site === 'discord') {
+    runDiscord();
   }
 }
 
@@ -154,6 +156,8 @@ const observer = new MutationObserver((mutations) => {
     runGmail();
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
+  } else if (site === 'discord') {
+    runDiscord();
   }
 });
 
@@ -183,5 +187,7 @@ setInterval(() => {
     runGmail();
   } else if (site === 'googleCalendar') {
     runGoogleCalendar();
+  } else if (site === 'discord') {
+    runDiscord();
   }
 }, 1000);

@@ -54,6 +54,20 @@ const defaultSettings = {
     floatPostButton: false,
     shiftTimelineRight: false
   },
+  discord: {
+    hideGiftButton: true,
+    hideGifButton: true,
+    hideStickerButton: true,
+    hideEmojiButton: false,
+    hideAppsButton: true,
+    hideAddServerButton: true,
+    hideDiscoverButton: true,
+    hideDownloadAppsButton: true,
+    hideHelpButton: true,
+    hideEventsItem: true,
+    hideServerBoostsItem: true,
+    redirectToFirstServer: true
+  },
   browser: {
     tabNumbering: true,
     blockInstagram: false,

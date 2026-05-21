@@ -9,7 +9,7 @@
 
 **No Account · No Server · No Tracking**
 
-A browser extension that removes clutter from YouTube, LinkedIn, Gmail, Google Calendar, and X. All features are toggleable from a popup.
+A browser extension that removes clutter from YouTube, LinkedIn, Gmail, Google Calendar, X, and Discord. All features are toggleable from a popup.
 
 ## Table of Contents
 
@@ -20,6 +20,7 @@ A browser extension that removes clutter from YouTube, LinkedIn, Gmail, Google C
   - [Gmail](#gmail)
   - [Google Calendar](#google-calendar)
   - [X (Twitter)](#x-twitter)
+  - [Discord](#discord)
 - [Browser Compatibility](#browser-compatibility)
 - [Installation](#installation)
 - [Build Your Own Version](#build-your-own-version)
@@ -60,6 +61,12 @@ A browser extension that removes clutter from YouTube, LinkedIn, Gmail, Google C
 - Hide the Trending and Who to Follow right sidebar
 - Hide the Grok drawer button and the Chat drawer button
 
+### Discord
+- Hide chat input bar buttons: Gift, GIF, Sticker, Emoji, Apps
+- Hide server list items: Add a Server, Discover, Download Apps, Help
+- Hide channel list items: Events, Server Boosts
+- Auto-open the first server on load, skipping the DMs screen (`discord.com/channels/@me`)
+
 ## Browser Compatibility
 
 Works on all Chromium-based browsers:
@@ -74,7 +81,6 @@ Works on all Chromium-based browsers:
 | Arc | `arc://extensions` |
 | Comet | `chrome://extensions` |
 | Chromium | `chromium://extensions` |
-
 
 ## Installation
 
@@ -116,25 +122,26 @@ Reload the extension from the extensions page after each change and test on the 
 ```
 webfix/
 ├── assets/
-│   ├── logo.png          # Extension icon
-│   └── image.png         # README screenshot
+│   ├── logo.png            # Extension icon
+│   └── image.png           # README screenshot
 ├── content/
-│   ├── main.js           # Entry point: initialises all modules
-│   ├── settings.js       # Default settings, storage read/write helpers
-│   ├── popup.js          # Floating settings UI (shadow DOM)
-│   ├── blocker.js        # Site blocker (runs before DOM loads)
-│   ├── tab-numbering.js  # Tab title numbering
-│   ├── utils.js          # Shared helpers
-│   ├── youtube.js        # YouTube tweaks
-│   ├── linkedin.js       # LinkedIn tweaks
-│   ├── gmail.js          # Gmail tweaks
-│   ├── google-calendar.js# Google Calendar tweaks
-│   └── x.js              # X (Twitter) tweaks
+│   ├── main.js             # Entry point: initialises all modules
+│   ├── settings.js         # Default settings, storage read/write helpers
+│   ├── popup.js            # Floating settings UI (shadow DOM)
+│   ├── blocker.js          # Site blocker (runs before DOM loads)
+│   ├── tab-numbering.js    # Tab title numbering
+│   ├── utils.js            # Shared helpers
+│   ├── youtube.js          # YouTube tweaks
+│   ├── linkedin.js         # LinkedIn tweaks
+│   ├── gmail.js            # Gmail tweaks
+│   ├── google-calendar.js  # Google Calendar tweaks
+│   ├── x.js                # X (Twitter) tweaks
+│   └── discord.js          # Discord tweaks
 ├── icons/
-│   ├── browser.svg       # Browser section icon in popup
-│   └── cross.svg         # Close button icon in popup
-├── background.js         # Service worker: tab events and messaging
-└── manifest.json         # Chrome extension manifest (MV3)
+│   ├── browser.svg         # Browser section icon in popup
+│   └── cross.svg           # Close button icon in popup
+├── background.js           # Service worker: tab events and messaging
+└── manifest.json           # Chrome extension manifest (MV3)
 ```
 
 ## License

@@ -10,6 +10,8 @@ function getCurrentSite() {
     return 'googleCalendar';
   } else if (hostname.includes('x.com') || hostname.includes('twitter.com')) {
     return 'x';
+  } else if (hostname.includes('discord.com')) {
+    return 'discord';
   }
   return null;
 }
