@@ -72,7 +72,8 @@ const popupConfig = [
       { key: 'hideBirthdays', label: 'Hide Birthdays Calendar' },
       { key: 'hideTasks', label: 'Hide Tasks Calendar' },
       { key: 'hideNavigationButtons', label: 'Hide Today Button' },
-      { key: 'hideViewSwitcher', label: 'Hide View Switcher' }
+      { key: 'hideViewSwitcher', label: 'Hide View Switcher' },
+      { key: 'hideUpgradeButton', label: 'Hide Upgrade Button' }
     ]
   },
   {

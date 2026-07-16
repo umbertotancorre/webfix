@@ -283,6 +283,21 @@ async function hideGoogleCalendarViewSwitcher() {
   });
 }
 
+async function hideGoogleCalendarUpgradeButton() {
+  const enabled = await getSetting('googleCalendar', 'hideUpgradeButton');
+  if (!enabled) return;
+
+  const upgradeButtons = document.querySelectorAll('button[aria-label="Upgrade"]');
+  upgradeButtons.forEach(button => {
+    const container = button.closest('div.nn5oJc');
+    if (container) {
+      container.style.display = 'none';
+    } else {
+      button.style.display = 'none';
+    }
+  });
+}
+
 async function runGoogleCalendar() {
   await Promise.all([
     hideGoogleCalendarTermsPrivacy(),
@@ -296,7 +311,8 @@ async function runGoogleCalendar() {
     hideGoogleCalendarBirthdays(),
     hideGoogleCalendarTasks(),
     hideGoogleCalendarNavigationButtons(),
-    hideGoogleCalendarViewSwitcher()
+    hideGoogleCalendarViewSwitcher(),
+    hideGoogleCalendarUpgradeButton()
   ]);
 
   await fixGoogleCalendarListHeights();

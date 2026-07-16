@@ -31,7 +31,8 @@ const defaultSettings = {
     hideBirthdays: true,
     hideTasks: true,
     hideNavigationButtons: true,
-    hideViewSwitcher: true
+    hideViewSwitcher: true,
+    hideUpgradeButton: true
   },
   x: {
     hideNavCreatorStudio: false,
