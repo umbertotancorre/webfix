@@ -53,6 +53,7 @@ A browser extension that removes clutter from YouTube, LinkedIn, Gmail, Google C
 - Hide mini-month calendar, Search for People panel, Birthdays calendar, and Tasks calendar from the sidebar
 - Hide Calendar/Tasks switcher icon
 - Hide Terms and Privacy footer
+- Hide the Upgrade button
 
 ### X (Twitter)
 - Hide individual left nav items: Logo, Home, Explore, Notifications, Follow, Messages, Grok, Premium, Bookmarks, Creator Studio, Articles, Profile, More
@@ -131,7 +132,7 @@ webfix/
 │   ├── popup.js            # Floating settings UI (shadow DOM)
 │   ├── blocker.js          # Site blocker (runs before DOM loads)
 │   ├── tab-numbering.js    # Tab title numbering
-│   ├── bookmarks.js         # Bookmarks JSON export
+│   ├── bookmarks.js        # Bookmarks JSON export
 │   ├── utils.js            # Shared helpers
 │   ├── youtube.js          # YouTube tweaks
 │   ├── linkedin.js         # LinkedIn tweaks
@@ -140,8 +141,12 @@ webfix/
 │   ├── x.js                # X (Twitter) tweaks
 │   └── discord.js          # Discord tweaks
 ├── icons/
-│   ├── browser.svg         # Browser section icon in popup
-│   └── cross.svg           # Close button icon in popup
+│   ├── logo.svg             # Logo source
+│   ├── logo16.png           # Toolbar icon (16px)
+│   ├── logo48.png           # Extension icon (48px)
+│   ├── logo128.png          # Store icon (128px)
+│   ├── browser.svg          # Browser section icon in popup
+│   └── cross.svg            # Close button icon in popup
 ├── background.js           # Service worker: tab events and messaging
 └── manifest.json           # Chrome extension manifest (MV3)
 ```
