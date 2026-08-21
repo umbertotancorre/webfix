@@ -1,4 +1,4 @@
-const BOOKMARKS_EXPORT_PREFIX = 'webfix-bookmarks';
+const BOOKMARKS_EXPORT_PREFIX = 'bookmarks-export';
 
 function fetchBookmarksFromBackground() {
   return new Promise((resolve, reject) => {
