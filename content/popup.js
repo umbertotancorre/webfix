@@ -20,7 +20,8 @@ const popupConfig = [
       { key: 'blockInstagram', label: 'Block Instagram' },
       { key: 'blockYouTube', label: 'Block YouTube' },
       { key: 'blockLinkedIn', label: 'Block LinkedIn' },
-      { key: 'blockX', label: 'Block X' }
+      { key: 'blockX', label: 'Block X' },
+      { type: 'action', label: 'Export Bookmarks', actionLabel: 'Export JSON', onAction: downloadBookmarksJson }
     ]
   },
   {
@@ -299,6 +300,24 @@ const popupStyles = `
   .switch input:checked + .slider:before {
       transform: translateX(16px);
     }
+  .action-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s;
+  }
+  .action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+  .action-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
 `;
 
 function createPopup() {
@@ -365,21 +384,45 @@ function createPopup() {
         label.textContent = s.label;
         row.appendChild(label);
 
-        const switchLabel = document.createElement('label');
-        switchLabel.className = 'switch';
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.checked = settings[sectionCfg.platform]?.[s.key] ?? true;
-        const slider = document.createElement('span');
-        slider.className = 'slider';
-        switchLabel.appendChild(input);
-        switchLabel.appendChild(slider);
+        if (s.type === 'action') {
+          const btn = document.createElement('button');
+          btn.className = 'action-btn';
+          btn.textContent = s.actionLabel || 'Run';
+          btn.addEventListener('click', async () => {
+            if (btn.disabled) return;
+            btn.disabled = true;
+            const originalLabel = btn.textContent;
+            btn.textContent = 'Working...';
+            try {
+              await s.onAction();
+              btn.textContent = 'Done';
+            } catch {
+              btn.textContent = 'Failed';
+            }
+            setTimeout(() => {
+              btn.textContent = originalLabel;
+              btn.disabled = false;
+            }, 1500);
+          });
+          row.appendChild(btn);
+        } else {
+          const switchLabel = document.createElement('label');
+          switchLabel.className = 'switch';
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = settings[sectionCfg.platform]?.[s.key] ?? true;
+          const slider = document.createElement('span');
+          slider.className = 'slider';
+          switchLabel.appendChild(input);
+          switchLabel.appendChild(slider);
 
-        input.addEventListener('change', () => {
-          setSetting(sectionCfg.platform, s.key, input.checked);
-        });
+          input.addEventListener('change', () => {
+            setSetting(sectionCfg.platform, s.key, input.checked);
+          });
 
-        row.appendChild(switchLabel);
+          row.appendChild(switchLabel);
+        }
+
         section.appendChild(row);
       });
 

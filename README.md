@@ -32,6 +32,7 @@ A browser extension that removes clutter from YouTube, LinkedIn, Gmail, Google C
 ### Browser
 - Number open tabs in the title bar (`1. Page Title`, `2. Page Title`, ...), updating live when tabs are added, moved, or removed
 - Block Instagram, YouTube, LinkedIn, or X entirely (redirects to `about:blank`)
+- Export all browser bookmarks to a timestamped JSON file from the popup
 
 ### YouTube
 - Hide Shorts (sidebar entries, feed shelves, search results, and video cards)
@@ -130,6 +131,7 @@ webfix/
 │   ├── popup.js            # Floating settings UI (shadow DOM)
 │   ├── blocker.js          # Site blocker (runs before DOM loads)
 │   ├── tab-numbering.js    # Tab title numbering
+│   ├── bookmarks.js         # Bookmarks JSON export
 │   ├── utils.js            # Shared helpers
 │   ├── youtube.js          # YouTube tweaks
 │   ├── linkedin.js         # LinkedIn tweaks

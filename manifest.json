@@ -27,6 +27,7 @@
         "content/settings.js",
         "content/utils.js",
         "content/tab-numbering.js",
+        "content/bookmarks.js",
         "content/popup.js",
         "content/youtube.js",
         "content/linkedin.js",
@@ -40,7 +41,7 @@
     }
   ],
   "host_permissions": ["<all_urls>"],
-  "permissions": ["activeTab", "storage", "tabs"],
+  "permissions": ["activeTab", "storage", "tabs", "bookmarks"],
   "web_accessible_resources": [
     {
       "resources": ["icons/*.svg"],

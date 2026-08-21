@@ -22,7 +22,17 @@ function updateAllTabNumbers(windowId) {
   });
 }
 
-// Handle requests for tab index
+function serializeBookmarkNode(node) {
+  const serialized = { id: node.id, title: node.title };
+  if (node.url) serialized.url = node.url;
+  if (typeof node.dateAdded === 'number') serialized.dateAdded = node.dateAdded;
+  if (Array.isArray(node.children)) {
+    serialized.children = node.children.map(serializeBookmarkNode);
+  }
+  return serialized;
+}
+
+// Handle requests for tab index and bookmarks export
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request?.action === 'getTabIndex') {
     chrome.tabs.query({ currentWindow: true }, (tabs) => {
@@ -32,6 +42,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ tabIndex });
       } else {
         sendResponse({ tabIndex: null });
+      }
+    });
+    return true;
+  }
+
+  if (request?.action === 'exportBookmarks') {
+    chrome.bookmarks.getTree((tree) => {
+      try {
+        sendResponse({
+          exportedAt: Date.now(),
+          bookmarks: tree.map(serializeBookmarkNode)
+        });
+      } catch {
+        sendResponse({ bookmarks: null });
       }
     });
     return true;
